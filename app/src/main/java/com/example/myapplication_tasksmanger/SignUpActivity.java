@@ -1,5 +1,6 @@
 package com.example.myapplication_tasksmanger;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -7,7 +8,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SignUpActivity extends AppCompatActivity {
     TextInputEditText tName;
@@ -67,6 +72,26 @@ public class SignUpActivity extends AppCompatActivity {
         }
         if (isAllOk) {
             Toast.makeText(this, "All OK", Toast.LENGTH_SHORT).show();
+            //עצם לביצוע רישום
+            FirebaseAuth auth=FirebaseAuth.getInstance();
+            //יצירת חשבון בעזרת מיל וסיסמא
+            auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override//התגובה שמתקבל הניסיון הרישום בענן
+                public void onComplete(@NonNull Task<AuthResult> task) {//הפרמטר מכיל מידע מהשרצ על תוצאת הבקשה לרישום
+                  if(task.isSuccessful()){//אם הפעולה הצליחה
+                      Toast.makeText(SignUpActivity.this,"Signing up Succeeded",Toast.LENGTH_SHORT).show();
+                      finish();
+                      //todo invoke save
+                  }
+                  else{
+                      Toast.makeText(SignUpActivity.this, "Signing up Failed", Toast.LENGTH_SHORT).show();
+                      tEmail.setError(task.getException().getMessage());//הצגת הודעה השגיאה שהקלה ההענן
+
+                  }
+                }
+            });
         }
+
     }
+    //todo save
 }
