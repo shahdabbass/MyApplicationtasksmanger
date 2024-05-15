@@ -8,11 +8,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.myapplication_tasksmanger.mydata.MyUser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignUpActivity extends AppCompatActivity {
     TextInputEditText tName;
@@ -32,7 +34,15 @@ public class SignUpActivity extends AppCompatActivity {
         tPhone = findViewById(R.id.etPhone);
         tPass = findViewById(R.id.etPassword);
         tRePass = findViewById(R.id.etRePassword);
+        btCancel=findViewById(R.id.btnCancel);
+        btSave=findViewById(R.id.btnSave);
         btSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkSignUp();
+            }
+        });
+        btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkSignUp();
@@ -81,7 +91,7 @@ public class SignUpActivity extends AppCompatActivity {
                   if(task.isSuccessful()){//אם הפעולה הצליחה
                       Toast.makeText(SignUpActivity.this,"Signing up Succeeded",Toast.LENGTH_SHORT).show();
                       finish();
-                      //todo invoke save
+                      saveUser_FB(email,name,phone,password,null);
                   }
                   else{
                       Toast.makeText(SignUpActivity.this, "Signing up Failed", Toast.LENGTH_SHORT).show();
@@ -93,5 +103,36 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
     }
-    //todo save
+   private void saveUser_FB(String email, String name, String phone, String passw, String image)
+   {
+       FirebaseFirestore db =FirebaseFirestore.getInstance();//مؤشر لقاعده البيانات
+       String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();//استخراج الرقم المميز للمستعمل الذي سجل الدخول لاستعماله كاسم للؤ"دوكيومنت"
+       //بناء الكائن الذي سيتم حفظه
+       MyUser user=new MyUser();
+       user.setKeyid(uid);
+       user.setEmail(email);
+       user.setFullName(name);
+       user.setPhone(phone);
+       user.setPassw(passw);
+       user.setImage(image);
+       //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
+       //معالج حدث لفحص هل تم المطلوب من قاعده البيانات
+       db.collection("MyUsers").document(uid).set(user).addOnCompleteListener(new OnCompleteListener<Void>()
+       {
+           //داله معالج الحدث
+           @Override
+           public void onComplete(@NonNull Task<Void> task)
+           {//هل تم تنفيذ المطلوب بنجاح
+               if(task.isSuccessful()){
+                   Toast.makeText(SignUpActivity.this, "Succeeded to add User", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               else{
+                   Toast.makeText(SignUpActivity.this, "Failed to add User", Toast.LENGTH_SHORT).show();
+               }
+           }
+       });
+
+
+   }
 }
