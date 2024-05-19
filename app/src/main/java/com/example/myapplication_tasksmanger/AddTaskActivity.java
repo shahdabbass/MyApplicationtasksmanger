@@ -89,7 +89,11 @@ public class AddTaskActivity extends AppCompatActivity {
     {
         FirebaseFirestore db =FirebaseFirestore.getInstance();//مؤشر لقاعده البيانات
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();//استخراج الرقم المميز للمستعمل الذي سجل الدخول لاستعماله كاسم للؤ"دوكيومنت"
-        String id = db.collection("MyUsers").document(uid).collection("tasks").document().getId();
+        String id = db.collection("MyUsers").
+                document(uid).
+                collection("subjects").
+                document(subj).
+                collection("tasks").document().getId();
         //بناء الكائن الذي سيتم حفظه
         MyTasks task=new MyTasks();
         task.setKeyId(id);
