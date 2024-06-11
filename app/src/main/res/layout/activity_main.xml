@@ -10,6 +10,8 @@
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:clickable="true"
         android:src="@android:drawable/ic_input_add" />
 
@@ -17,11 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <SearchView
-            android:id="@+id/srchV"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <Spinner
             android:id="@+id/spnr"
@@ -31,8 +28,14 @@
         <ListView
             android:id="@+id/lstV"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent" >
 
+
+        </ListView>
+        <SearchView
+            android:id="@+id/srchV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </RelativeLayout>

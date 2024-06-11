@@ -76,6 +76,12 @@
                 android:hint="Text" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <ImageButton
+            android:id="@+id/imgBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:srcCompat="@tools:sample/avatars" />
+
     </LinearLayout>
 
 </RelativeLayout>
