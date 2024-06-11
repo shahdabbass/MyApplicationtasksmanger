@@ -27,6 +27,11 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        if(FirebaseAuth.getInstance().getCurrentUser()!= null){
+            finish();
+            Intent i=new Intent(SignInActivity.this,MainActivity.class);
+            startActivity(i);
+        }
         signIn = findViewById(R.id.btnSignIn);
         signUp = findViewById(R.id.btnSignUp);
         tEmail = findViewById(R.id.etEmail);
@@ -78,6 +83,9 @@ public class SignInActivity extends AppCompatActivity {
                     if(task.isSuccessful()){//אם הפעולה הצליחה
                         Toast.makeText(SignInActivity.this, "Signing in Succeeded", Toast.LENGTH_SHORT).show();
                         //מעבר למסך הראשי
+                        Intent i=new Intent(SignInActivity.this,MainActivity.class);
+                        startActivity(i);
+                        finish();
                     }
                     else {
                         Toast.makeText(SignInActivity.this, "Signing in Failed", Toast.LENGTH_SHORT).show();

@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.myapplication_tasksmanger.R;
-import com.google.firebase.database.annotations.Nullable;ArrayAdapter<MyTasks>
+import com.google.firebase.database.annotations.Nullable;
 public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
     //המזהה של קובץ עיצוב הפריט
     private final int itemLayout;
@@ -51,9 +51,9 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
         TextView tvTitle=vitem.findViewById(R.id.tvItmTitle);
         TextView tvText=vitem.findViewById(R.id.tvItmText);
         TextView tvImportance=vitem.findViewById(R.id.tvItmImportance);
-        ImageButton btnSendSMS=vitem.findViewById(R.id.imgVsend);
-        ImageButton btnCall=vitem.findViewById(R.id.imgVcall);
-        ImageButton btnEdit=vitem.findViewById(R.id.imgVedit);
+        ImageView btnSendSMS=vitem.findViewById(R.id.imgVsend);
+        ImageView btnCall=vitem.findViewById(R.id.imgVcall);
+        ImageView btnEdit=vitem.findViewById(R.id.imgVedit);
         ImageButton btnImportance=vitem.findViewById(R.id.imgVimp);
 
         //קבלת הנתון (עצם) הנוכחי

@@ -9,6 +9,15 @@ public long time;//زمن بناء المهمه
 public boolean isCompleted;//هل تمت المهمه
 public String subjId;//رقم موضوع المهمه
 public String userId;//رقم المستعمل الذي اضاف المهمه
+    public String img;
+
+    public void setImg(String img) {
+        this.img = img;
+    }
+
+    public String getImg() {
+        return img;
+    }
 
     public void setKeyId(String keyId) {
         this.keyId = keyId;

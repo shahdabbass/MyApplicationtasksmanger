@@ -3,6 +3,7 @@ package com.example.myapplication_tasksmanger;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -11,19 +12,23 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myapplication_tasksmanger.mydata.MyTasks;
-import com.example.myapplication_tasksmanger.mydata.MyUser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.util.UUID;
 
 public class AddTaskActivity extends AppCompatActivity {
 
@@ -31,10 +36,10 @@ public class AddTaskActivity extends AppCompatActivity {
 //upload: 2 add next fileds
     private final int IMAGE_PICK_CODE=100;// קוד מזהה לבקשת בחירת תמונה
     private final int PERMISSION_CODE=101;//קוד מזהה לבחירת הרשאת גישה לקבצים
-    private ImageButton imgBtnl;//כפתור/ לחצן לבחירת תמונה והצגתה
+    private ImageView imgBtnl;//כפתור/ לחצן לבחירת תמונה והצגתה
     private Uri toUploadimageUri;// כתוב הקובץ(תמונה) שרוצים להעלות
     private Uri downladuri;//כתובת הקוץ בענן אחרי ההעלאה
-    private MyTasks myTask;//עצם/נתון שרוצים לשמור
+    private MyTasks mytask =new MyTasks();//עצם/נתון שרוצים לשמור
 
 
     Button save;
@@ -58,7 +63,7 @@ public class AddTaskActivity extends AppCompatActivity {
         sub=findViewById(R.id.etSubject);
         title=findViewById(R.id.erShortTitle);
         text=findViewById(R.id.etText);
-        imgBtnl=findViewById(R.id.imgBtn);
+        imgBtnl=findViewById(R.id.imgV);
         imgBtnl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,45 +102,43 @@ public class AddTaskActivity extends AppCompatActivity {
             isAllOk = false;
             text.setError("must enter text");
         }
-        if (isAllOk) {
-            Toast.makeText(this, "All OK", Toast.LENGTH_SHORT).show();
-            //עצם לביצוע רישום
-           saveTask_FB(Text,Title,importance,subj);
-
-        }
         if (subj.length() == 0) {
             isAllOk = false;
             sub.setError("must enter subject");
         }
+        if (isAllOk) {
+            Toast.makeText(this, "All OK", Toast.LENGTH_SHORT).show();
+            //بناء الكائن الذي سيتم حفظه
+
+
+            mytask.setSubjId(subj);
+            mytask.setText(Text);
+            mytask.setShortTitle(Title);
+            mytask.setImportance(importance);
+            uploadImage(toUploadimageUri);
+
+        }
+
 
     }
-    private void saveTask_FB(String text,String title,int importance,String subj)
+    private void saveTask_FB()
     {
         FirebaseFirestore db =FirebaseFirestore.getInstance();//مؤشر لقاعده البيانات
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();//استخراج الرقم المميز للمستعمل الذي سجل الدخول لاستعماله كاسم للؤ"دوكيومنت"
-        String id = db.collection("MyUsers").
+        String id = db.collection("users").
                 document(uid).
                 collection("subjects").
-                document(subj).
+                document(mytask.getSubjId()).
                 collection("tasks").document().getId();
-        //بناء الكائن الذي سيتم حفظه
-        MyTasks task=new MyTasks();
-        task.setKeyId(id);
-        task.setUserId(uid);
-        task.setSubjId(subj);
-        task.setText(text);
-        task.setShortTitle(title);
-        task.setImportance(importance);
+
 
         //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
         //معالج حدث لفحص هل تم المطلوب من قاعده البيانات
-        db.collection("MyUsers").
+        db.collection("users").
                 document(uid).
-                collection("subjects").
-                document(subj).
                 collection("tasks").
                 document(id).
-                set(task).addOnCompleteListener(new OnCompleteListener<Void>()
+                set(mytask).addOnCompleteListener(new OnCompleteListener<Void>()
                  {
             //داله معالج الحدث
             @Override
@@ -213,6 +216,58 @@ public class AddTaskActivity extends AppCompatActivity {
         }
 
     }
+
+    private void uploadImage(Uri filePath) {
+        if (filePath != null) {
+            //יצירת דיאלוג התקדמות
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle("Uploading...");
+            progressDialog.show();//הצגת הדיאלוג
+            //קבלת כתובת האחסון בענן
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageReference = storage.getReference();
+            //יצירת תיקיה ושם גלובלי לקובץ
+            final StorageReference ref = storageReference.child("mytaskpics/" + UUID.randomUUID().toString());
+            // יצירת ״תהליך מקביל״ להעלאת תמונה
+            ref.putFile(filePath)
+                    //הוספת מאזין למצב ההעלאה
+                    .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                progressDialog.dismiss();// הסתרת הדיאלוג
+                                //קבלת כתובת הקובץ שהועלה
+                                ref.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Uri> task) {
+                                        downladuri = task.getResult();
+                                        Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
+                                        mytask.setImg(downladuri.toString());//עדכון כתובת התמונה שהועלתה
+                                        saveTask_FB();
+                                    }
+                                });
+                            } else {
+                                progressDialog.dismiss();//הסתרת הדיאלוג
+                                Toast.makeText(getApplicationContext(), "Failed " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    })
+                    //הוספת מאזין שמציג מהו אחוז ההעלאה
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            //חישוב מה הגודל שהועלה
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred()/ taskSnapshot
+                                    .getTotalByteCount());
+                            progressDialog.setMessage("Uploaded " + (int) progress + "%");
+                        }
+                    });
+        } else {
+            saveTask_FB();
+        }
+    }
+
+
 
 
 

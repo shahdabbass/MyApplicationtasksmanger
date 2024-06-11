@@ -14,7 +14,7 @@
             android:id="@+id/imageVitm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@tools:sample/avatars" />
+            app:srcCompat="@android:drawable/ic_menu_help"  />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -50,7 +50,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@tools:sample/avatars"
                     app:srcCompat="@android:drawable/sym_call_outgoing" />
 
                 <ImageView
@@ -58,7 +57,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@tools:sample/avatars"
                     app:srcCompat="@android:drawable/ic_menu_edit" />
 
                 <ImageView
@@ -66,7 +64,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@tools:sample/avatars"
                     app:srcCompat="@android:drawable/btn_star_big_on" />
 
                 <ImageView
@@ -74,7 +71,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@tools:sample/avatars"
                     app:srcCompat="@android:drawable/ic_menu_send" />
             </LinearLayout>
 
