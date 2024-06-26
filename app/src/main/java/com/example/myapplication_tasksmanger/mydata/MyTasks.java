@@ -1,7 +1,7 @@
 package com.example.myapplication_tasksmanger.mydata;
 
 public class MyTasks {
-public String keyId;//رقم المهمه
+public String id;//رقم المهمه
 public int importance;//درجه الاهميه 1-5
 public String shortTitle;//عنوان قصير
 public String text;//نص المهمه
@@ -10,6 +10,16 @@ public boolean isCompleted;//هل تمت المهمه
 public String subjId;//رقم موضوع المهمه
 public String userId;//رقم المستعمل الذي اضاف المهمه
     public String img;
+    public boolean isStar;
+
+    public void setStar(boolean star) {
+        isStar = star;
+    }
+
+    public boolean isStar() {
+        return isStar;
+    }
+
 
     public void setImg(String img) {
         this.img = img;
@@ -19,12 +29,12 @@ public String userId;//رقم المستعمل الذي اضاف المهمه
         return img;
     }
 
-    public void setKeyId(String keyId) {
-        this.keyId = keyId;
+    public void setId(String keyId) {
+        this.id = keyId;
     }
 
-    public String getKeyId() {
-        return keyId;
+    public String getId() {
+        return id;
     }
 
     public int getImportance() {
@@ -85,7 +95,7 @@ public String userId;//رقم المستعمل الذي اضاف المهمه
     @Override
     public String toString() {
         return "MyTasks{" +
-                "keyId=" + keyId +
+                "keyId=" + id +
                 ", importance=" + importance +
                 ", shortTitle='" + shortTitle + '\'' +
                 ", text='" + text + '\'' +

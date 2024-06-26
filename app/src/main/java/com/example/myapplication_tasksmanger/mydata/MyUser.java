@@ -4,7 +4,7 @@ public class MyUser {
         public String keyid;
     public String fullName;
     public String email;//بحاله لم يتم اعطاء اسم للعامود يكون اسم الصفه هو اسم العامود
-    public String phone;
+    public String phone;//
     public String passw;
     public String image;
 

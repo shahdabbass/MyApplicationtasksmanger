@@ -1,14 +1,20 @@
 package com.example.myapplication_tasksmanger;
 
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -36,7 +42,7 @@ public class AddTaskActivity extends AppCompatActivity {
 //upload: 2 add next fileds
     private final int IMAGE_PICK_CODE=100;// קוד מזהה לבקשת בחירת תמונה
     private final int PERMISSION_CODE=101;//קוד מזהה לבחירת הרשאת גישה לקבצים
-    private ImageView imgBtnl;//כפתור/ לחצן לבחירת תמונה והצגתה
+    private ImageView imageV;//כפתור/ לחצן לבחירת תמונה והצגתה
     private Uri toUploadimageUri;// כתוב הקובץ(תמונה) שרוצים להעלות
     private Uri downladuri;//כתובת הקוץ בענן אחרי ההעלאה
     private MyTasks mytask =new MyTasks();//עצם/נתון שרוצים לשמור
@@ -63,8 +69,8 @@ public class AddTaskActivity extends AppCompatActivity {
         sub=findViewById(R.id.etSubject);
         title=findViewById(R.id.erShortTitle);
         text=findViewById(R.id.etText);
-        imgBtnl=findViewById(R.id.imgV);
-        imgBtnl.setOnClickListener(new View.OnClickListener() {
+        imageV =findViewById(R.id.imgV);
+        imageV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 checkPermission();
@@ -130,7 +136,8 @@ public class AddTaskActivity extends AppCompatActivity {
                 collection("subjects").
                 document(mytask.getSubjId()).
                 collection("tasks").document().getId();
-
+        mytask.setId(id);
+        mytask.setUserId(uid);
 
         //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
         //معالج حدث لفحص هل تم المطلوب من قاعده البيانات
@@ -171,7 +178,7 @@ public class AddTaskActivity extends AppCompatActivity {
         if (resultCode==RESULT_OK && requestCode== IMAGE_PICK_CODE){
             //a עידכון תכונת כתובת התמונה
             toUploadimageUri = data.getData();//קבלת כתובת התמונה הנתונים שניבחרו
-            imgBtnl.setImageURI(toUploadimageUri);// הצגת התמונה שנבחרה על רכיב התמונה
+            imageV.setImageURI(toUploadimageUri);// הצגת התמונה שנבחרה על רכיב התמונה
         }
     }
     /**
@@ -181,9 +188,10 @@ public class AddTaskActivity extends AppCompatActivity {
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//בדיקת גרסאות
             //בדיקה אם ההשאה לא אושרה בעבר
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(READ_MEDIA_IMAGES) == PackageManager.PERMISSION_DENIED) {
                 //רשימת ההרשאות שרוצים לבקש אישור
-                String[] permissions = {android.Manifest.permission.READ_EXTERNAL_STORAGE};
+                String[] permissions = {android.Manifest.permission.READ_EXTERNAL_STORAGE,READ_MEDIA_IMAGES};
                 //בקשת אישור ההשאות (שולחים קוד הבקשה)
                 //התשובה תתקבל בפעולה onRequestPermissionsResult
                 requestPermissions(permissions, PERMISSION_CODE);
@@ -206,7 +214,10 @@ public class AddTaskActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode==PERMISSION_CODE) {//בדיקת קוד בקשת ההרשאה
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            //בדירת אם אושר גישה לתמונות בטלפון
+            if (grantResults.length > 0 &&
+                    (grantResults[0] == PackageManager.PERMISSION_GRANTED ||
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
                 //permission was granted אם יש אישור
                 pickImageFromGallery();
             } else {
@@ -266,7 +277,65 @@ public class AddTaskActivity extends AppCompatActivity {
             saveTask_FB();
         }
     }
+//menu
+    @Override//بناء قائمه
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
 
+    @Override//معالجه حدث اختيار عنصر من القائمه
+    public boolean onOptionsItemSelected(MenuItem item){
+        if(item.getItemId()==R.id.itmLogOut){
+                showYesNoDialog();
+        }
+        if(item.getItemId()==R.id.itmHistory){
+
+        }
+        if(item.getItemId()==R.id.itmPlayMusic)
+        {
+            Toast.makeText(this,"Play music",Toast.LENGTH_SHORT).show();
+            Intent serviceIntn=new Intent(getApplicationContext(),MyAudioPlayService.class);
+            startService(serviceIntn);
+        }
+
+        if(item.getItemId()==R.id.itmStopMusic)
+        {
+            Toast.makeText(this,"Stop music",Toast.LENGTH_SHORT).show();
+            Intent serviceIntn=new Intent(getApplicationContext(),MyAudioPlayService.class);
+            stopService(serviceIntn);
+        }
+        return true;
+    }
+//dialog
+    public void showYesNoDialog()
+    {
+        //تجهيز بناء شباك حوار يتلقى بارمتر مؤشر للنشاط الحالي
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setTitle("Log out");//تحديد العنوان
+        builder.setMessage("Are you sure?");
+        //الضغط على الزر و معالج الحدث
+        builder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //معالجه حدث للموافقه
+                Toast.makeText(AddTaskActivity.this,"Signing out",Toast.LENGTH_SHORT).show();
+                FirebaseAuth.getInstance().signOut();
+                finish();
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //معالجه حدث للموافقه
+                Toast.makeText(AddTaskActivity.this,"Signing out",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+        AlertDialog dialog=builder.create();//بناء شباك الحوار
+        dialog.show();//عرض الشباك
+    }
 
 
 
