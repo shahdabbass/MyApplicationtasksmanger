@@ -79,9 +79,9 @@
         <ImageView
             android:id="@+id/imgV"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:srcCompat="@tools:sample/avatars"
-            android:src="@mipmap/my_logo"/>
+            android:layout_height="125dp"
+            android:scrollbarSize="0sp"
+            android:src="@android:drawable/ic_menu_camera" />
 
     </LinearLayout>
 

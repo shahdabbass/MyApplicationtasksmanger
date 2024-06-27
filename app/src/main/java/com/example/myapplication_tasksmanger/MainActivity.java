@@ -1,16 +1,22 @@
 package com.example.myapplication_tasksmanger;
 
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static android.Manifest.permission.READ_SMS;
+import static android.Manifest.permission.RECEIVE_SMS;
+
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -18,6 +24,8 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.myapplication_tasksmanger.msgBkg.MsgListener;
+import com.example.myapplication_tasksmanger.msgBkg.MySmsReceiver;
 import com.example.myapplication_tasksmanger.mydata.MyTaskAdapter;
 import com.example.myapplication_tasksmanger.mydata.MyTasks;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,18 +36,22 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MsgListener {
 
+    private static final int PERMISSION_CODE = 100;
     private FloatingActionButton Fab;
    private SearchView Sv;
     private Spinner sspnr;
     private ArrayAdapter<String> spnrSubjctAdapter;
     private ListView lstv;
     private MyTaskAdapter tasksAdapter;
+    private boolean isHistory=false;
+    private boolean isStar=false;
+    private boolean isAll=true;
 
 
     @Override
@@ -51,16 +63,29 @@ public class MainActivity extends AppCompatActivity {
         sspnr=findViewById(R.id.spnr);
         spnrSubjctAdapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         sspnr.setAdapter(spnrSubjctAdapter);
+        sspnr.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                readTaskFrom_FB();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         lstv=findViewById(R.id.lstV);
         tasksAdapter=new MyTaskAdapter(this,R.layout.mytask_item_layout);
         lstv.setAdapter(tasksAdapter);
+        // // adding bind listener for message receiver on below line.
+        MySmsReceiver.bindListener(this);
         Fab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent i = new Intent(MainActivity.this, AddTaskActivity.class);
                 startActivity(i);
             }
         });
-
+checkPermission();
 
     }
 
@@ -97,15 +122,31 @@ public class MainActivity extends AppCompatActivity {
                             //מעבר על כל ה״מסמכים״= עצמים והוספתם למבנה הנתונים
                             tasksAdapter.clear();
                             spnrSubjctAdapter.clear();
-                            HashSet<String> subjects = new HashSet<>();
+                            HashSet<String> subjectSet = new HashSet<>();
+
                             for (DocumentSnapshot document : task.getResult().getDocuments()) {
                                 //המרת העצם לטיפוס שלו// הוספת העצם למבנה הנתונים
                                 MyTasks myTask = document.toObject(MyTasks.class);
+                                if(isAll){
+                                    tasksAdapter.add(myTask);
+                                    subjectSet.add(myTask.getSubjId());
+                                }
+                                else
+                                if (isStar && isStar==myTask.isStar ){
+                                       tasksAdapter.add(myTask);
+                                       subjectSet.add(myTask.getSubjId());
 
-                                tasksAdapter.add(myTask);
-                                subjects.add(myTask.getSubjId());
+                                }else
+                                if (isHistory && isHistory==myTask.isCompleted ){
+                                    tasksAdapter.add(myTask);
+                                    subjectSet.add(myTask.getSubjId());
+
+                                }
+
                             }
-                            spnrSubjctAdapter.addAll(subjects);
+                            spnrSubjctAdapter.addAll(subjectSet);
+                            tasksAdapter.sort(new MyComp());
+
                         } else {
                             Toast.makeText(MainActivity.this, "Error Reading data" + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
@@ -125,7 +166,10 @@ public class MainActivity extends AppCompatActivity {
             showYesNoDialog();
         }
         if(item.getItemId()==R.id.itmHistory){
-
+         isHistory=true;
+         isAll=false;
+         isStar=false;
+         readTaskFrom_FB();
         }
         if(item.getItemId()==R.id.itmPlayMusic)
         {
@@ -140,6 +184,19 @@ public class MainActivity extends AppCompatActivity {
             Intent serviceIntn=new Intent(getApplicationContext(),MyAudioPlayService.class);
             stopService(serviceIntn);
         }
+        if (item.getItemId()==R.id.itmStar){
+            isStar=true;
+            isAll=false;
+            isHistory=false;
+            readTaskFrom_FB();
+        }
+        if (item.getItemId()==R.id.itmAll){
+            isAll=true;
+            isHistory=false;
+            isStar=false;
+            readTaskFrom_FB();
+        }
+
         return true;
     }
     //dialog
@@ -172,6 +229,82 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();//عرض الشباك
     }
 
+    private void checkPermission()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//בדיקת גרסאות
+            //בדיקה אם ההשאה לא אושרה בעבר
+            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
+                    || checkSelfPermission(READ_MEDIA_IMAGES) == PackageManager.PERMISSION_DENIED
+                    || checkSelfPermission(READ_SMS) == PackageManager.PERMISSION_DENIED
+                    || checkSelfPermission(RECEIVE_SMS) == PackageManager.PERMISSION_DENIED) {
+                //רשימת ההרשאות שרוצים לבקש אישור
+                String[] permissions = {android.Manifest.permission.READ_EXTERNAL_STORAGE,READ_MEDIA_IMAGES,READ_SMS,RECEIVE_SMS};
+                //בקשת אישור ההשאות (שולחים קוד הבקשה)
+                //התשובה תתקבל בפעולה onRequestPermissionsResult
+                requestPermissions(permissions, PERMISSION_CODE);
+            } else {
+                //permission already granted אם יש הרשאה מקודם אז מפעילים בחירת תמונה מהטלפון
+            }
+        }
+        else {//אם גרסה ישנה ולא צריך קבלת אישור
+        }
+    }
+    @Override
+    public void msgReceived(String phone, String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        saveMsgAsTask(phone, message);
+    }
+    private void saveMsgAsTask(String phone, String message)
+    {
+
+        FirebaseFirestore db =FirebaseFirestore.getInstance();//مؤشر لقاعده البيانات
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();//استخراج الرقم المميز للمستعمل الذي سجل الدخول لاستعماله كاسم للؤ"دوكيومنت"
+        MyTasks mytask=new MyTasks();
+        mytask.setSubjId("SMS");
+        mytask.setText(phone);
+        mytask.setShortTitle(message);
+
+        String id = db.collection("users").
+                document(uid).
+                collection("subjects").
+                document(mytask.getSubjId()).
+                collection("tasks").document().getId();
+        mytask.setId(id);
+        mytask.setUserId(uid);
+
+        //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
+        //معالج حدث لفحص هل تم المطلوب من قاعده البيانات
+        db.collection("users").
+                document(uid).
+                collection("tasks").
+                document(id).
+                set(mytask).addOnCompleteListener(new OnCompleteListener<Void>()
+                {
+                    //داله معالج الحدث
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task)
+                    {//هل تم تنفيذ المطلوب بنجاح
+                        if(task.isSuccessful()){
+                            Toast.makeText(MainActivity.this, "Succeeded to add SMS task", Toast.LENGTH_SHORT).show();
+                            readTaskFrom_FB();
+                        }
+                        else{
+                            Toast.makeText(MainActivity.this, "Failed to add SMS task", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
 
+    }
+    public class MyComp implements Comparator<MyTasks>
+    {
+
+        @Override
+        public int compare(MyTasks o1, MyTasks o2) {
+            if(o1.isCompleted()==false && o2.isCompleted==false)
+
+            return -o1.importance+o2.importance;
+            else return -10+(-o1.importance+o2.importance);
+        }
+    }
 }

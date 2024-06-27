@@ -8,6 +8,12 @@
         android:layout_height="wrap_content"
         android:title="Log out" />
     <item
+        android:id="@+id/itmAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="All"
+        app:showAsAction="always|withText" />
+    <item
         android:id="@+id/itmHistory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -138,6 +138,7 @@ public class AddTaskActivity extends AppCompatActivity {
                 collection("tasks").document().getId();
         mytask.setId(id);
         mytask.setUserId(uid);
+        mytask.setCompleted(false);
 
         //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
         //معالج حدث لفحص هل تم المطلوب من قاعده البيانات

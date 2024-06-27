@@ -11,25 +11,37 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/my_logo"
-        android:label="@string/app_name"
+        android:label="Task Manger"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <receiver
+            android:name=".msgBkg.MySmsReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <!-- adding intent filter as sms received -->
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+
+
         <service
             android:name=".MyAudioPlayService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
-        <activity
-            android:name=".SettingActivity"
-            android:exported="false" />
         <activity
             android:name=".AddTaskActivity"
             android:exported="false" />

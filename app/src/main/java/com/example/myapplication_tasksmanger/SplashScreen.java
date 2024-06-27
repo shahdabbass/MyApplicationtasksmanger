@@ -1,12 +1,20 @@
 package com.example.myapplication_tasksmanger;
 
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static android.Manifest.permission.READ_SMS;
+import static android.Manifest.permission.RECEIVE_SMS;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
 public class SplashScreen extends AppCompatActivity {
+
+    private static final int PERMISSION_CODE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -29,8 +37,8 @@ public class SplashScreen extends AppCompatActivity {
             }
         };
         h.postDelayed(r, 3000);
-
     }
+
 
 
     }

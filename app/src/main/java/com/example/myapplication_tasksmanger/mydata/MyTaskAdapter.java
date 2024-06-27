@@ -164,7 +164,6 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
                     public void onComplete(@NonNull Task<Void> task)
                     {//هل تم تنفيذ المطلوب بنجاح
                         if(task.isSuccessful()){
-                            Toast.makeText(getContext(), " task updated", Toast.LENGTH_SHORT).show();
 
                         }
                         else{
