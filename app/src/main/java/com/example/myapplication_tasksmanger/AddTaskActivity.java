@@ -33,6 +33,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.util.UUID;
 
@@ -94,7 +95,7 @@ public class AddTaskActivity extends AppCompatActivity {
         });
 
     }
-
+//edit
     @Override
     protected void onResume() {
         super.onResume();
@@ -105,11 +106,33 @@ public class AddTaskActivity extends AppCompatActivity {
                 save.setText("update");
                 sb.setProgress(mytask.getImportance());
                 sub.setText(mytask.getText());
-                title.getText(mytask.ge());
+                title.setText(mytask.getText());
+                text.setText(mytask.getText());
+                downloadImageUsingPicasso(mytask.getImg(),imageV);
 
             }
         }
     }
+    /**
+     * הצגת תמונה ישירות מהענן בעזרת המחלקה ״פיקאסו״
+     *
+     * @param imageUrL כתובת התמונה בענן/שרת
+     * @param toView   רכיב תמונה המיועד להצגת התמונה אחרי ההורדה
+     */
+    private void downloadImageUsingPicasso(String imageUrL, ImageView toView) {
+        // אם אין תמונה= כתובת ריקה אז לא עושים כלום מפסיקים את הפעולה
+        if (imageUrL == null) return;
+        //todo: add dependency to module gradle:
+        //    implementation 'com.squareup.picasso:picasso:2.5.2'
+        Picasso.with(this)
+                .load(imageUrL)//הורדת התמונה לפי כתובת
+                .centerCrop()
+                .error(R.mipmap.my_logo)//התמונה שמוצגת אם יש בעיה בהורדת התמונה
+                .resize(90, 90)//שינוי גודל התמונה
+                .into(toView);// להציג בריכיב התמונה המיועד לתמונה זו
+    }
+
+
 
     private void checkAndSave() {
         boolean isAllOk = true;
@@ -139,6 +162,7 @@ public class AddTaskActivity extends AppCompatActivity {
             mytask.setText(Text);
             mytask.setShortTitle(Title);
             mytask.setImportance(importance);
+            //عنوان الصوره بالهاتف
             uploadImage(toUploadimageUri);
 
         }
@@ -154,7 +178,9 @@ public class AddTaskActivity extends AppCompatActivity {
                 collection("subjects").
                 document(mytask.getSubjId()).
                 collection("tasks").document().getId();
-        mytask.setId(id);
+        if (!toUpdate) {
+            mytask.setId(id);
+        }
         mytask.setUserId(uid);
         mytask.setCompleted(false);
         mytask.setStar(false);
@@ -164,7 +190,7 @@ public class AddTaskActivity extends AppCompatActivity {
         db.collection("users").
                 document(uid).
                 collection("tasks").
-                document(id).
+                document(mytask.getId()).
                 set(mytask).addOnCompleteListener(new OnCompleteListener<Void>()
                  {
             //داله معالج الحدث
