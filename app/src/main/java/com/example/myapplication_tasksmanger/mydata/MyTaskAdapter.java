@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.PermissionChecker;
 
 import com.example.myapplication_tasksmanger.AddTaskActivity;
@@ -78,20 +80,20 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
         ImageView imageView = vitem.findViewById(R.id.imageVitm);
         TextView tvTitle = vitem.findViewById(R.id.tvItmTitle);
         TextView tvText = vitem.findViewById(R.id.tvItmText);
-        TextView tvImportance = vitem.findViewById(R.id.tvItmImportance);
+       // TextView tvImportance = vitem.findViewById(R.id.tvItmImportance);
         ImageView imgSend = vitem.findViewById(R.id.imgVsend);
         ImageView imgCall = vitem.findViewById(R.id.imgVcall);
         ImageView imgEdit = vitem.findViewById(R.id.imgVedit);
         ImageView imgStar = vitem.findViewById(R.id.imgVimp);
         CheckBox checkBox=vitem.findViewById(R.id.checkBox);
-
-
+        ImageView imgWApp=vitem.findViewById(R.id.imgW);
+        CardView cardView=vitem.findViewById(R.id.card);
         //קבלת הנתון (עצם) הנוכחי
         MyTasks current = getItem(position);
         //הצגת הנתונים על שדות הרכיב הגרפי
         tvTitle.setText(current.getShortTitle());
         tvText.setText(current.getText());
-        tvImportance.setText("Importance:" + current.getImportance());
+       // tvImportance.setText("Importance:" + current.getImportance());
         checkBox.setChecked(current.isCompleted);
         if(current.isStar()){
             imgStar.setImageResource(android.R.drawable.star_big_on);
@@ -102,6 +104,7 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
         }
         downloadImageUsingPicasso(current.getImg(), imageView);
         //  return vitem;
+        updteBackGround(current.getImportance(),cardView);
 
 
         imgSend.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +112,12 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
             public void onClick(View view) {
                 openSendSmsApp(current.getText(), "");
 
+            }
+        });
+        imgWApp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSendWhatsAppV2( current.getShortTitle(),current.getText());
             }
         });
 
@@ -156,6 +165,25 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
         });
        //
         return vitem;//????
+    }
+//color
+    private void updteBackGround(int importance, CardView cardView) {
+        if(importance==4){
+            cardView.setCardBackgroundColor(Color.parseColor("#E76F51"));
+
+        }
+        if(importance==3){
+            cardView.setCardBackgroundColor(Color.parseColor("#BBE9FF"));
+
+        }
+        if(importance==2){
+            cardView.setCardBackgroundColor(Color.parseColor("#B7E5B4"));
+
+        }
+        if(importance==1){
+            cardView.setCardBackgroundColor(Color.parseColor("#FFFC9B"));
+
+        }
     }
 
     private void updatetask(MyTasks current) {

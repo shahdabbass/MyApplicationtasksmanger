@@ -100,7 +100,7 @@ public class AddTaskActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (getIntent()!=null){
-            if (getIntent().getExtras().get("task")!=null){
+            if (getIntent().getExtras()!=null && getIntent().getExtras().get("task")!=null){
                 mytask  = (MyTasks) getIntent().getExtras().get("task");
                 toUpdate=true;
                 save.setText("update");
