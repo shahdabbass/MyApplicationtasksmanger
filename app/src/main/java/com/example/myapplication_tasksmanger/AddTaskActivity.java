@@ -46,6 +46,7 @@ public class AddTaskActivity extends AppCompatActivity {
     private Uri toUploadimageUri;// כתוב הקובץ(תמונה) שרוצים להעלות
     private Uri downladuri;//כתובת הקוץ בענן אחרי ההעלאה
     private MyTasks mytask =new MyTasks();//עצם/נתון שרוצים לשמור
+    private boolean toUpdate=false;
 
 
     Button save;
@@ -93,6 +94,23 @@ public class AddTaskActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (getIntent()!=null){
+            if (getIntent().getExtras().get("task")!=null){
+                mytask  = (MyTasks) getIntent().getExtras().get("task");
+                toUpdate=true;
+                save.setText("update");
+                sb.setProgress(mytask.getImportance());
+                sub.setText(mytask.getText());
+                title.getText(mytask.ge());
+
+            }
+        }
+    }
+
     private void checkAndSave() {
         boolean isAllOk = true;
         String subj=sub.getText().toString();
@@ -139,6 +157,7 @@ public class AddTaskActivity extends AppCompatActivity {
         mytask.setId(id);
         mytask.setUserId(uid);
         mytask.setCompleted(false);
+        mytask.setStar(false);
 
         //اضافه كائن "لمجموعه" المستعملين و معالج حدث لفحص نجاح المطلوب
         //معالج حدث لفحص هل تم المطلوب من قاعده البيانات

@@ -36,7 +36,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 
@@ -49,9 +49,10 @@ public class MainActivity extends AppCompatActivity implements MsgListener {
     private ArrayAdapter<String> spnrSubjctAdapter;
     private ListView lstv;
     private MyTaskAdapter tasksAdapter;
-    private boolean isHistory=false;
-    private boolean isStar=false;
+    private boolean isHistoryPressed =false;
+    private boolean isStarPressed =false;
     private boolean isAll=true;
+    HashSet<String> subjectSet = new HashSet<>();
 
 
     @Override
@@ -61,12 +62,14 @@ public class MainActivity extends AppCompatActivity implements MsgListener {
         Fab=findViewById(R.id.fabAdd);
         Sv=findViewById(R.id.srchV);
         sspnr=findViewById(R.id.spnr);
+
+        //بناء الوسيط
         spnrSubjctAdapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         sspnr.setAdapter(spnrSubjctAdapter);
         sspnr.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                readTaskFrom_FB();
+                readTaskFrom_FB(spnrSubjctAdapter.getItem(position));
             }
 
             @Override
@@ -92,14 +95,14 @@ checkPermission();
     @Override
     protected void onResume() {
         super.onResume();
-        readTaskFrom_FB();
+        readTaskFrom_FB("");
     }
 
     /**
      *  קריאת נתונים ממסד הנתונים firestore
      * @return .... רשימת הנתונים שנקראה ממסד הנתונים
      */
-    public void readTaskFrom_FB() {
+    public void readTaskFrom_FB(String selectedSubject) {
 
         //קבלת הפנייה למסד הנתונים
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -122,29 +125,54 @@ checkPermission();
                             //מעבר על כל ה״מסמכים״= עצמים והוספתם למבנה הנתונים
                             tasksAdapter.clear();
                             spnrSubjctAdapter.clear();
-                            HashSet<String> subjectSet = new HashSet<>();
-
+                            subjectSet.clear();
+                           //يمر على المهمات
                             for (DocumentSnapshot document : task.getResult().getDocuments()) {
                                 //המרת העצם לטיפוס שלו// הוספת העצם למבנה הנתונים
                                 MyTasks myTask = document.toObject(MyTasks.class);
-                                if(isAll){
-                                    tasksAdapter.add(myTask);
+                                if(isAll ){
+                                    if (selectedSubject.length()!=0 && myTask.getSubjId().equals(selectedSubject)){
+                                        tasksAdapter.add(myTask);
+
+                                    }
+                                     else if (selectedSubject.length()==0){
+                                        tasksAdapter.add(myTask);
+
+                                     }
                                     subjectSet.add(myTask.getSubjId());
                                 }
                                 else
-                                if (isStar && isStar==myTask.isStar ){
-                                       tasksAdapter.add(myTask);
-                                       subjectSet.add(myTask.getSubjId());
+                                if (isStarPressed ==true && true ==myTask.isStar  ){
 
-                                }else
-                                if (isHistory && isHistory==myTask.isCompleted ){
-                                    tasksAdapter.add(myTask);
+                                    if (selectedSubject.length()!=0 && myTask.getSubjId().equals(selectedSubject)){
+                                        tasksAdapter.add(myTask);
+
+                                    }
+                                    else if (selectedSubject.length()==0){
+                                        tasksAdapter.add(myTask);
+
+                                    }
                                     subjectSet.add(myTask.getSubjId());
 
+                                }else
+                                if (isHistoryPressed==true && true ==myTask.isCompleted ){
+                                    if (selectedSubject.length()!=0 && myTask.getSubjId().equals(selectedSubject)){
+                                        tasksAdapter.add(myTask);
+
+                                    }
+                                    else if (selectedSubject.length()==0){
+                                        tasksAdapter.add(myTask);
+
+                                    }
+                                    subjectSet.add(myTask.getSubjId());
                                 }
 
                             }
-                            spnrSubjctAdapter.addAll(subjectSet);
+                            ArrayList<String> subs=new ArrayList<>();
+                            subs.addAll(subjectSet);
+                            int index = subs.indexOf(selectedSubject);
+                            spnrSubjctAdapter.addAll(subs);
+                            sspnr.setSelection(index);
                             tasksAdapter.sort(new MyComp());
 
                         } else {
@@ -166,10 +194,10 @@ checkPermission();
             showYesNoDialog();
         }
         if(item.getItemId()==R.id.itmHistory){
-         isHistory=true;
+         isHistoryPressed =true;
          isAll=false;
-         isStar=false;
-         readTaskFrom_FB();
+         isStarPressed =false;
+         readTaskFrom_FB("");
         }
         if(item.getItemId()==R.id.itmPlayMusic)
         {
@@ -185,16 +213,16 @@ checkPermission();
             stopService(serviceIntn);
         }
         if (item.getItemId()==R.id.itmStar){
-            isStar=true;
+            isStarPressed =true;
             isAll=false;
-            isHistory=false;
-            readTaskFrom_FB();
+            isHistoryPressed =false;
+            readTaskFrom_FB("");
         }
         if (item.getItemId()==R.id.itmAll){
             isAll=true;
-            isHistory=false;
-            isStar=false;
-            readTaskFrom_FB();
+            isHistoryPressed =false;
+            isStarPressed =false;
+            readTaskFrom_FB("");
         }
 
         return true;
@@ -254,6 +282,7 @@ checkPermission();
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         saveMsgAsTask(phone, message);
     }
+    //save a SMS as a task
     private void saveMsgAsTask(String phone, String message)
     {
 
@@ -286,7 +315,7 @@ checkPermission();
                     {//هل تم تنفيذ المطلوب بنجاح
                         if(task.isSuccessful()){
                             Toast.makeText(MainActivity.this, "Succeeded to add SMS task", Toast.LENGTH_SHORT).show();
-                            readTaskFrom_FB();
+                            readTaskFrom_FB("");
                         }
                         else{
                             Toast.makeText(MainActivity.this, "Failed to add SMS task", Toast.LENGTH_SHORT).show();
@@ -296,6 +325,7 @@ checkPermission();
 
 
     }
+    //فئه تطبق واجهة interface تقارن بين كائنات بمجموعه معينه .
     public class MyComp implements Comparator<MyTasks>
     {
 

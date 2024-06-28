@@ -118,6 +118,16 @@ public class MyTaskAdapter  extends ArrayAdapter<MyTasks> {
                 callAPhoneNymber(current.getText());
             }
         });
+        imgEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(getContext(),AddTaskActivity.class);
+                i.putExtra("task",current);
+                getContext().startActivity(i);
+
+
+            }
+        });
 
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

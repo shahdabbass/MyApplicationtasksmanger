@@ -12,22 +12,27 @@ private static MsgListener msgListener;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-// getting bundle data on below line from intent.
+// getting bundle data  from intent.
         Bundle data = intent.getExtras();
-        // creating an object on below line.
+        // creating an object
+       // يتم استخراج كائنات الـ PDU (Protocol Data Units) من الـ Bundle. الـ PDU هو تنسيق ثنائي يحتوي على بيانات الرسالة.
         Object[] pdus = (Object[]) data.get("pdus");
-        // running for loop to read the sms on below line.
+        // running for loop to read the sms
+        //معالجة كل PDU
         for (int i = 0; i < pdus.length; i++) {
-            // getting sms message on below line.
+            // getting sms message
+            //يتم تحويل الـ PDU إلى كائن SmsMessage
             SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdus[i]);
-            // extracting the sms from sms message and setting it to string on below line.
+            // extracting the sms from sms message and setting it to string
+            //استخراج نص الرسالة ورقم الهاتف
             String message = smsMessage.getMessageBody();
             String phone = smsMessage.getDisplayOriginatingAddress();
-            // adding the message to listener on below line.
+            // adding the message to listener
+            //يتم استدعاء دالة msgReceived من المستمع (msgListener) وتمرير رقم الهاتف ونص الرسالة إليها.
             msgListener.msgReceived(phone,message);
         }
     }
-    // on below line we are binding the listener.
+    //  we are binding the listener.
     public static void bindListener(MsgListener listener) {
         msgListener = listener;
 

@@ -1,6 +1,8 @@
 package com.example.myapplication_tasksmanger.mydata;
 
-public class MyTasks {
+import java.io.Serializable;
+
+public class MyTasks implements Serializable {
 public String id;//رقم المهمه
 public int importance;//درجه الاهميه 1-5
 public String shortTitle;//عنوان قصير
