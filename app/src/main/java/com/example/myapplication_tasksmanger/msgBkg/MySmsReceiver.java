@@ -9,7 +9,7 @@ import android.telephony.SmsMessage;
 public class MySmsReceiver extends BroadcastReceiver {
     // creating a variable for a message listener interface on below line.
 private static MsgListener msgListener;
-
+//استخراج الرساله من الهاتف
     @Override
     public void onReceive(Context context, Intent intent) {
 // getting bundle data  from intent.

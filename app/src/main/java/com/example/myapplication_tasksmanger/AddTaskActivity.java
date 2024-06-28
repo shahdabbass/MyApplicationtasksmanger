@@ -122,7 +122,7 @@ public class AddTaskActivity extends AppCompatActivity {
     private void downloadImageUsingPicasso(String imageUrL, ImageView toView) {
         // אם אין תמונה= כתובת ריקה אז לא עושים כלום מפסיקים את הפעולה
         if (imageUrL == null) return;
-        //todo: add dependency to module gradle:
+
         //    implementation 'com.squareup.picasso:picasso:2.5.2'
         Picasso.with(this)
                 .load(imageUrL)//הורדת התמונה לפי כתובת
@@ -175,8 +175,6 @@ public class AddTaskActivity extends AppCompatActivity {
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();//استخراج الرقم المميز للمستعمل الذي سجل الدخول لاستعماله كاسم للؤ"دوكيومنت"
         String id = db.collection("users").
                 document(uid).
-                collection("subjects").
-                document(mytask.getSubjId()).
                 collection("tasks").document().getId();
         if (!toUpdate) {
             mytask.setId(id);
@@ -216,7 +214,7 @@ public class AddTaskActivity extends AppCompatActivity {
         intent.setType("image/*");
         startActivityForResult(intent,IMAGE_PICK_CODE);//הפעלתה האינטנט עם קוד הבקשה
     }
-
+    //הצגת התמונה
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
         super.onActivityResult(requestCode,resultCode,data);
